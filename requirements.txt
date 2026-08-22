@@ -1,0 +1,17 @@
+kaggle
+python-dotenv
+
+pandas
+numpy
+scikit-learn
+
+matplotlib
+seaborn
+plotly
+
+jupyter
+ipykernel
+
+statsmodels
+
+xgboost

@@ -1,4 +1,16 @@
-.env
+# Virtual environment
 venv/
+.venv/
+
+# Python
 __pycache__/
+*.pyc
+
+# Environment/secrets
+.env
+
+# Raw M5 dataset
 data/raw/*
+
+# Jupyter
+.ipynb_checkpoints/

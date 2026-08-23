@@ -2,26 +2,19 @@
 
 ## Overview
 
-This project analyzes retail demand across products and stores and
-develops a machine learning forecasting pipeline to support
-inventory planning decisions.
+This project analyzes retail demand across products and stores and develops a machine learning forecasting pipeline to support inventory planning decisions.
 
-Using the M5 retail sales dataset, the project combines exploratory
-data analysis, feature engineering, time-series forecasting, and
-inventory analytics to identify demand patterns and translate
-forecasts into actionable business recommendations.
+Using the M5 retail sales dataset, the project combines exploratory data analysis, feature engineering, time-series forecasting, model evaluation, and inventory analytics to identify demand patterns and translate forecasts into actionable business recommendations.
 
 ### Project Pipeline
 
-Data Cleaning → EDA → Feature Engineering → Forecasting →
-Model Evaluation → Inventory Analytics → Tableau Dashboard
+Data Cleaning → EDA → Feature Engineering → Forecasting → Model Evaluation → Inventory Analytics → Tableau Dashboard
 
 ---
 
 ## Business Problem
 
-Retailers need accurate demand forecasts to make effective inventory
-decisions.
+Retailers need accurate demand forecasts to make effective inventory decisions.
 
 Poor forecasts can lead to:
 
@@ -30,9 +23,7 @@ Poor forecasts can lead to:
 - Inefficient allocation of inventory across stores
 - Increased holding costs
 
-The goal of this project is to determine whether historical demand,
-calendar patterns, product/store characteristics, events, and pricing
-can improve demand forecasts and support inventory planning.
+The goal of this project is to determine whether historical demand, calendar patterns, product/store characteristics, events, and pricing can improve demand forecasts and support inventory planning.
 
 ---
 
@@ -60,35 +51,29 @@ The dataset consists of:
 
 # 1. Exploratory Data Analysis
 
-EDA was performed to identify the major patterns that should inform
-the forecasting model.
+EDA was performed to identify the major patterns that should inform the forecasting model.
 
 ### Key Findings
 
 **Strong weekly seasonality**
 
-Weekend demand was substantially higher than weekday demand, with
-Saturday and Sunday showing the highest average daily sales.
+Weekend demand was substantially higher than weekday demand, with Saturday and Sunday showing the highest average daily sales.
 
 **Store-level demand variation**
 
-Demand differed substantially across stores, indicating that
-location should be incorporated into forecasting.
+Demand differed substantially across stores, indicating that location should be incorporated into forecasting.
 
 **Category concentration**
 
-FOODS accounted for the majority of total sales, followed by
-HOUSEHOLD and HOBBIES.
+FOODS accounted for the majority of total sales, followed by HOUSEHOLD and HOBBIES.
 
 **Moderate annual seasonality**
 
-Demand generally increased toward August–September before declining
-toward November–December.
+Demand generally increased toward August–September before declining toward November–December.
 
 **Heterogeneous event effects**
 
-Events did not universally increase demand. Event effects varied
-considerably by event type and individual event.
+Events did not universally increase demand. Event effects varied considerably by event type and individual event.
 
 ### Modeling Implications
 
@@ -141,15 +126,13 @@ The forecasting dataset incorporated:
 - Selling price
 - Price-missing indicator
 
-All lag and rolling features were constructed using historical
-information only to avoid target leakage.
+All lag and rolling features were constructed using historical information only to avoid target leakage.
 
 ---
 
 ## Forecasting Methodology
 
-A time-based validation strategy was used rather than a random
-train/test split.
+A time-based validation strategy was used rather than a random train/test split.
 
 ### Training
 
@@ -172,8 +155,9 @@ Two forecasting approaches were compared:
 1. Seasonal Naive
 2. LightGBM
 
-The seasonal-naive baseline predicts demand using the corresponding
-day from the previous week.
+The seasonal-naive baseline predicts demand using the corresponding day from the previous week.
+
+LightGBM predictions were also constrained to non-negative values because negative unit demand is not meaningful for inventory planning.
 
 ---
 
@@ -190,9 +174,7 @@ LightGBM reduced:
 - **RMSE by 29.38%**
 - **WMAPE by 25.57%**
 
-This demonstrates that combining historical demand with calendar,
-product, store, event, and pricing information substantially improved
-forecast performance over the seasonal-naive baseline.
+This demonstrates that combining historical demand with calendar, product, store, event, and pricing information substantially improved forecast performance over the seasonal-naive baseline.
 
 ---
 
@@ -211,33 +193,96 @@ The most important LightGBM features were:
 9. `rolling_std_7`
 10. `sell_price`
 
-The model relied heavily on recent demand history and recurring
-seasonal patterns, while product, store, and pricing information
-provided additional predictive value.
+The model relied heavily on recent demand history and recurring seasonal patterns, while product, store, and pricing information provided additional predictive value.
 
 ---
 
 # 3. Inventory Analytics
 
-> **In progress**
+The forecasting model was translated into inventory planning metrics at the product-store level.
 
-The forecasting model will be translated into inventory planning
-metrics including:
+## Inventory Planning Framework
 
-- Forecasted demand
+Because the M5 dataset does not contain actual on-hand inventory, supplier lead times, purchase orders, replenishment quantities, or observed stockouts, inventory recommendations are presented as a forecast-driven planning simulation.
+
+The analysis uses the following assumptions:
+
+- Lead time: **7 days**
+- Target service level: **95%**
+- Z-score: **1.645**
+
+### Safety Stock
+
+Safety stock is estimated using forecast error variability:
+
+**Safety Stock = Z × Forecast Error Standard Deviation × √Lead Time**
+
+This provides a buffer against uncertainty in the demand forecast.
+
+### Reorder Point
+
+The reorder point is estimated as:
+
+**Reorder Point = Expected Lead-Time Demand + Safety Stock**
+
+Expected lead-time demand is calculated using average forecasted daily demand over the assumed seven-day lead time.
+
+---
+
+## Inventory Prioritization
+
+A planning priority score was created to identify product-store combinations that combine higher expected demand with greater forecast uncertainty.
+
+The score is intended to prioritize inventory review rather than represent a probability of stockout.
+
+The analysis produces:
+
+- Average forecasted demand
+- Forecast error variability
+- Lead-time demand
 - Safety stock
-- Reorder point
-- Stockout risk
-- Inventory prioritization
-- Store/product demand risk
+- Reorder points
+- Demand scores
+- Uncertainty scores
+- Inventory priority scores
 
-The goal is to move from:
+The final inventory dataset contains **1,500 product-store series** covering the validation period.
 
-**"What will demand be?"**
+---
 
-to:
+## Store-Level Inventory Analysis
 
-**"What should the retailer do about it?"**
+Inventory metrics are also aggregated by store to identify locations with greater forecasted demand and inventory requirements.
+
+This allows the analysis to move beyond individual products and identify stores that may require greater inventory planning attention.
+
+---
+
+## Inventory Planning Recommendations
+
+The forecast-driven inventory analysis supports several practical planning actions:
+
+- Prioritize high-demand, high-uncertainty product-store combinations for inventory review.
+- Use estimated safety stock to provide additional protection against forecast error.
+- Use reorder points to determine when replenishment should be initiated under the assumed lead time.
+- Monitor stores with high aggregate forecasted demand and inventory requirements.
+- Recalculate inventory parameters as forecasts and demand patterns change.
+
+The analysis demonstrates how demand forecasting can support downstream operational decisions rather than stopping at model accuracy.
+
+### Limitations
+
+The inventory analysis is a planning simulation rather than an evaluation of actual inventory performance.
+
+The M5 dataset does not contain:
+
+- On-hand inventory
+- Supplier lead times
+- Purchase orders
+- Replenishment quantities
+- Observed stockouts
+
+Therefore, the seven-day lead time and 95% service level are explicit planning assumptions rather than observed business parameters.
 
 ---
 
@@ -245,7 +290,7 @@ to:
 
 > **In progress**
 
-The final dashboard will communicate:
+The final dashboard will communicate the forecasting and inventory planning results.
 
 ### Demand Overview
 
@@ -262,10 +307,11 @@ The final dashboard will communicate:
 
 ### Inventory
 
-- Stockout risk
-- Reorder recommendations
 - Safety stock
-- Inventory prioritization
+- Reorder points
+- Inventory priority
+- High-demand/high-uncertainty products
+- Store-level inventory requirements
 
 ---
 
@@ -273,6 +319,7 @@ The final dashboard will communicate:
 
 ```text
 Retail-Demand-Forecasting/
+
 │
 ├── data/
 │   ├── raw/

@@ -12,5 +12,8 @@ __pycache__/
 # Raw M5 dataset
 data/raw/*
 
+# Processed dataset
+data/processed/*
+
 # Jupyter
 .ipynb_checkpoints/

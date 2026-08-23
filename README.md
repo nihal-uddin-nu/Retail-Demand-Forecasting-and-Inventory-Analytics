@@ -281,6 +281,7 @@ Retail-Demand-Forecasting/
 ├── notebooks/
 │   ├── 01_EDA.ipynb
 │   ├── 02_Forecasting.ipynb
+│   └── 03_Inventory_Analytics.ipynb
 │
 ├── download_dataset.py
 │

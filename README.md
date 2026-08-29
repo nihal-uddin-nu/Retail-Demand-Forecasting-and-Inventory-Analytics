@@ -4,7 +4,7 @@
 
 This project analyzes retail demand across products and stores and develops a machine learning forecasting pipeline to support inventory planning decisions.
 
-Using the M5 retail sales dataset, the project combines exploratory data analysis, feature engineering, time-series forecasting, model evaluation, and inventory analytics to identify demand patterns and translate forecasts into actionable business recommendations.
+Using the M5 retail sales dataset, the project combines exploratory data analysis, feature engineering, time-series forecasting, model evaluation, inventory analytics, and Tableau visualization to identify demand patterns and translate forecasts into actionable business recommendations.
 
 ### Project Pipeline
 
@@ -18,10 +18,10 @@ Retailers need accurate demand forecasts to make effective inventory decisions.
 
 Poor forecasts can lead to:
 
-- Stockouts and lost sales
-- Excess inventory
-- Inefficient allocation of inventory across stores
-- Increased holding costs
+* Stockouts and lost sales
+* Excess inventory
+* Inefficient allocation of inventory across stores
+* Increased holding costs
 
 The goal of this project is to determine whether historical demand, calendar patterns, product/store characteristics, events, and pricing can improve demand forecasts and support inventory planning.
 
@@ -31,21 +31,21 @@ The goal of this project is to determine whether historical demand, calendar pat
 
 The project uses the M5 retail sales dataset.
 
-### Dataset characteristics
+### Dataset Characteristics
 
-- 3,049 products
-- 10 stores
-- 3 states
-- 7 departments
-- 3 categories
-- 1,913 daily observations
-- Date range: January 29, 2011 – June 19, 2016
+* 3,049 products
+* 10 stores
+* 3 states
+* 7 departments
+* 3 categories
+* 1,913 daily observations
+* Date range: January 29, 2011 – June 19, 2016
 
 The dataset consists of:
 
-- `sales` — historical daily unit sales
-- `calendar` — dates, weekdays, events, and SNAP indicators
-- `prices` — historical product/store prices
+* `sales` — historical daily unit sales
+* `calendar` — dates, weekdays, events, and SNAP indicators
+* `prices` — historical product/store prices
 
 ---
 
@@ -79,12 +79,12 @@ Events did not universally increase demand. Event effects varied considerably by
 
 These findings motivated the use of:
 
-- Calendar features
-- Historical demand lags
-- Rolling demand statistics
-- Product/store identifiers
-- Event information
-- Pricing information
+* Calendar features
+* Historical demand lags
+* Rolling demand statistics
+* Product/store identifiers
+* Event information
+* Pricing information
 
 ---
 
@@ -96,35 +96,35 @@ The forecasting dataset incorporated:
 
 ### Calendar
 
-- Day of week
-- Week of year
-- Month
-- Year
-- Weekend indicator
+* Day of week
+* Week of year
+* Month
+* Year
+* Weekend indicator
 
 ### Historical Demand
 
-- 1-day lag
-- 7-day lag
-- 28-day lag
-- 7-day rolling mean
-- 28-day rolling mean
-- 7-day rolling standard deviation
+* 1-day lag
+* 7-day lag
+* 28-day lag
+* 7-day rolling mean
+* 28-day rolling mean
+* 7-day rolling standard deviation
 
 ### Product & Location
 
-- Item
-- Department
-- Category
-- Store
-- State
+* Item
+* Department
+* Category
+* Store
+* State
 
 ### Events & Pricing
 
-- Event indicator
-- Event type
-- Selling price
-- Price-missing indicator
+* Event indicator
+* Event type
+* Selling price
+* Price-missing indicator
 
 All lag and rolling features were constructed using historical information only to avoid target leakage.
 
@@ -157,22 +157,22 @@ Two forecasting approaches were compared:
 
 The seasonal-naive baseline predicts demand using the corresponding day from the previous week.
 
-LightGBM predictions were also constrained to non-negative values because negative unit demand is not meaningful for inventory planning.
+LightGBM predictions were constrained to non-negative values because negative unit demand is not meaningful for inventory planning.
 
 ---
 
 ## Model Performance
 
-| Model | MAE | RMSE | WMAPE |
-|---|---:|---:|---:|
-| Seasonal Naive | 4.71 | 8.18 | 59.37% |
-| **LightGBM** | **3.50** | **5.78** | **44.19%** |
+| Model          |      MAE |     RMSE |      WMAPE |
+| -------------- | -------: | -------: | ---------: |
+| Seasonal Naive |     4.71 |     8.18 |     59.37% |
+| **LightGBM**   | **3.50** | **5.78** | **44.19%** |
 
 LightGBM reduced:
 
-- **MAE by 25.57%**
-- **RMSE by 29.38%**
-- **WMAPE by 25.57%**
+* **MAE by 25.57%**
+* **RMSE by 29.38%**
+* **WMAPE by 25.57%**
 
 This demonstrates that combining historical demand with calendar, product, store, event, and pricing information substantially improved forecast performance over the seasonal-naive baseline.
 
@@ -207,9 +207,9 @@ Because the M5 dataset does not contain actual on-hand inventory, supplier lead 
 
 The analysis uses the following assumptions:
 
-- Lead time: **7 days**
-- Target service level: **95%**
-- Z-score: **1.645**
+* Lead time: **7 days**
+* Target service level: **95%**
+* Z-score: **1.645**
 
 ### Safety Stock
 
@@ -237,14 +237,14 @@ The score is intended to prioritize inventory review rather than represent a pro
 
 The analysis produces:
 
-- Average forecasted demand
-- Forecast error variability
-- Lead-time demand
-- Safety stock
-- Reorder points
-- Demand scores
-- Uncertainty scores
-- Inventory priority scores
+* Average forecasted demand
+* Forecast error variability
+* Lead-time demand
+* Safety stock
+* Reorder points
+* Demand scores
+* Uncertainty scores
+* Inventory priority scores
 
 The final inventory dataset contains **1,500 product-store series** covering the validation period.
 
@@ -262,11 +262,11 @@ This allows the analysis to move beyond individual products and identify stores 
 
 The forecast-driven inventory analysis supports several practical planning actions:
 
-- Prioritize high-demand, high-uncertainty product-store combinations for inventory review.
-- Use estimated safety stock to provide additional protection against forecast error.
-- Use reorder points to determine when replenishment should be initiated under the assumed lead time.
-- Monitor stores with high aggregate forecasted demand and inventory requirements.
-- Recalculate inventory parameters as forecasts and demand patterns change.
+* Prioritize high-demand, high-uncertainty product-store combinations for inventory review.
+* Use estimated safety stock to provide additional protection against forecast error.
+* Use reorder points to determine when replenishment should be initiated under the assumed lead time.
+* Monitor stores with high aggregate forecasted demand and inventory requirements.
+* Recalculate inventory parameters as forecasts and demand patterns change.
 
 The analysis demonstrates how demand forecasting can support downstream operational decisions rather than stopping at model accuracy.
 
@@ -276,11 +276,11 @@ The inventory analysis is a planning simulation rather than an evaluation of act
 
 The M5 dataset does not contain:
 
-- On-hand inventory
-- Supplier lead times
-- Purchase orders
-- Replenishment quantities
-- Observed stockouts
+* On-hand inventory
+* Supplier lead times
+* Purchase orders
+* Replenishment quantities
+* Observed stockouts
 
 Therefore, the seven-day lead time and 95% service level are explicit planning assumptions rather than observed business parameters.
 
@@ -288,30 +288,31 @@ Therefore, the seven-day lead time and 95% service level are explicit planning a
 
 # 4. Tableau Dashboard
 
-> **In progress**
+Interactive Tableau dashboards were created to communicate demand, forecast performance, store-level patterns, and inventory priorities.
 
-The final dashboard will communicate the forecasting and inventory planning results.
+### Dashboard 1 — Demand & Forecast Performance
 
-### Demand Overview
+* Actual demand KPI
+* Forecast demand KPI
+* WMAPE
+* Actual vs. forecast demand
 
-- Sales trends
-- Category performance
-- Store performance
-- Seasonality
+### Dashboard 2 — Store Performance
 
-### Forecasting
+* Demand by store
+* Forecast error by store
 
-- Actual vs predicted demand
-- Forecast accuracy
-- High-demand products/stores
+### Dashboard 3 — Inventory Planning & Prioritization
 
-### Inventory
+* Top 15 inventory priorities
+* Safety stock by store
+* Reorder point by store
+* Reorder point vs. forecast demand
+* Inventory planning assumptions
 
-- Safety stock
-- Reorder points
-- Inventory priority
-- High-demand/high-uncertainty products
-- Store-level inventory requirements
+### Tableau Dashboard Preview
+
+![Tableau Inventory Planning Dashboard](dashboard/dashboard_3.png)
 
 ---
 
@@ -320,7 +321,6 @@ The final dashboard will communicate the forecasting and inventory planning resu
 ```text
 Retail-Demand-Forecasting/
 
-│
 ├── data/
 │   ├── raw/
 │   └── processed/
@@ -330,8 +330,12 @@ Retail-Demand-Forecasting/
 │   ├── 02_Forecasting.ipynb
 │   └── 03_Inventory_Analytics.ipynb
 │
-├── download_dataset.py
+├── dashboard/
+│   ├── Retail_Demand_Inventory.twbx
+│   └── dashboard_3.png
 │
+├── download_dataset.py
 ├── requirements.txt
 ├── .gitignore
 └── README.md
+```

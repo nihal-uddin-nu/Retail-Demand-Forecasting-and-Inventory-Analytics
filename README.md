@@ -4,11 +4,11 @@
 
 This project analyzes retail demand across products and stores and develops a machine learning forecasting pipeline to support inventory planning decisions.
 
-Using the M5 retail sales dataset, the project combines exploratory data analysis, feature engineering, time-series forecasting, model evaluation, inventory analytics, and Tableau visualization to identify demand patterns and translate forecasts into actionable business recommendations.
+Using the M5 retail sales dataset, the project combines exploratory data analysis, feature engineering, time-series forecasting, model evaluation, and inventory analytics to identify demand patterns and translate forecasts into actionable business recommendations.
 
 ### Project Pipeline
 
-Data Cleaning → EDA → Feature Engineering → Forecasting → Model Evaluation → Inventory Analytics → Tableau Dashboard
+**Data Cleaning → EDA → Feature Engineering → Forecasting → Model Evaluation → Inventory Analytics → Sensitivity Analysis → Tableau Dashboards**
 
 ---
 
@@ -29,7 +29,7 @@ The goal of this project is to determine whether historical demand, calendar pat
 
 ## Dataset
 
-The project uses the M5 retail sales dataset.
+The project uses the **M5 retail sales dataset**.
 
 ### Dataset Characteristics
 
@@ -168,13 +168,13 @@ LightGBM predictions were constrained to non-negative values because negative un
 | Seasonal Naive |     4.71 |     8.18 |     59.37% |
 | **LightGBM**   | **3.50** | **5.78** | **44.19%** |
 
-LightGBM reduced:
+Compared with the seasonal-naive baseline, LightGBM reduced:
 
 * **MAE by 25.57%**
 * **RMSE by 29.38%**
 * **WMAPE by 25.57%**
 
-This demonstrates that combining historical demand with calendar, product, store, event, and pricing information substantially improved forecast performance over the seasonal-naive baseline.
+The results demonstrate that combining historical demand with calendar, product, store, event, and pricing information substantially improved forecast performance over the seasonal-naive baseline.
 
 ---
 
@@ -203,9 +203,9 @@ The forecasting model was translated into inventory planning metrics at the prod
 
 ## Inventory Planning Framework
 
-Because the M5 dataset does not contain actual on-hand inventory, supplier lead times, purchase orders, replenishment quantities, or observed stockouts, inventory recommendations are presented as a forecast-driven planning simulation.
+Because the M5 dataset does not contain actual on-hand inventory, supplier lead times, purchase orders, replenishment quantities, or observed stockouts, inventory recommendations are presented as a **forecast-driven planning simulation**.
 
-The analysis uses the following assumptions:
+The base planning assumptions are:
 
 * Lead time: **7 days**
 * Target service level: **95%**
@@ -270,7 +270,9 @@ The forecast-driven inventory analysis supports several practical planning actio
 
 The analysis demonstrates how demand forecasting can support downstream operational decisions rather than stopping at model accuracy.
 
-### Limitations
+---
+
+## Limitations
 
 The inventory analysis is a planning simulation rather than an evaluation of actual inventory performance.
 
@@ -286,23 +288,73 @@ Therefore, the seven-day lead time and 95% service level are explicit planning a
 
 ---
 
-# 4. Tableau Dashboard
+# 4. Lead Time & Service Level Sensitivity Analysis
 
-Interactive Tableau dashboards were created to communicate demand, forecast performance, store-level patterns, and inventory priorities.
+To evaluate the robustness of the inventory recommendations, the analysis tests different combinations of replenishment lead time and target service level.
 
-### Dashboard 1 — Demand & Forecast Performance
+### Tested Assumptions
+
+**Lead Times**
+
+* 3 days
+* 7 days
+* 14 days
+* 21 days
+
+**Service Levels**
+
+* 90%
+* 95%
+* 99%
+
+This produces **12 planning scenarios**.
+
+The underlying LightGBM forecasts and forecast uncertainty remain unchanged. Only the inventory planning assumptions are varied.
+
+### Key Results
+
+The average reorder point across the 1,500 product-store series was:
+
+| Lead Time | 90% |    95% | 99% |
+| --------- | --: | -----: | --: |
+| 3 days    |  34 |     37 |  43 |
+| 7 days    |  72 | **76** |  84 |
+| 14 days   | 134 |    141 | 152 |
+| 21 days   | 195 |    203 | 217 |
+
+The **7-day / 95% combination represents the base planning case** used in the original inventory analysis.
+
+### Key Insight
+
+Increasing lead time increases expected lead-time demand and therefore has a substantial effect on reorder points.
+
+Increasing the target service level increases safety stock because a larger Z-score is applied to forecast uncertainty.
+
+The results demonstrate that inventory requirements are sensitive to both replenishment timing and the desired level of protection against forecast uncertainty.
+
+---
+
+# 5. Tableau Dashboards
+
+Interactive Tableau dashboards were created to communicate demand patterns, forecast performance, store-level differences, inventory priorities, and sensitivity to inventory planning assumptions.
+
+## Dashboard 1 — Demand & Forecast Performance
 
 * Actual demand KPI
 * Forecast demand KPI
-* WMAPE
+* WMAPE KPI
 * Actual vs. forecast demand
 
-### Dashboard 2 — Store Performance
+This dashboard provides a high-level view of overall demand and forecast performance.
+
+## Dashboard 2 — Store Performance
 
 * Demand by store
 * Forecast error by store
 
-### Dashboard 3 — Inventory Planning & Prioritization
+This dashboard highlights differences in demand and forecasting performance across locations.
+
+## Dashboard 3 — Inventory Planning
 
 * Top 15 inventory priorities
 * Safety stock by store
@@ -310,9 +362,57 @@ Interactive Tableau dashboards were created to communicate demand, forecast perf
 * Reorder point vs. forecast demand
 * Inventory planning assumptions
 
-### Tableau Dashboard Preview
+This dashboard translates forecast results into product- and store-level inventory planning insights.
 
-![Tableau Inventory Planning Dashboard](dashboard/dashboard_3.png)
+# 4. Tableau Dashboards
+
+Interactive Tableau dashboards were created to communicate demand patterns, forecast performance, store-level differences, inventory priorities, and sensitivity to inventory planning assumptions.
+
+## Dashboard 1 — Demand & Forecast Performance
+
+* Actual demand KPI
+* Forecast demand KPI
+* WMAPE KPI
+* Actual vs. forecast demand
+
+This dashboard provides a high-level view of overall demand and forecast performance.
+
+## Dashboard 2 — Store Performance
+
+* Demand by store
+* Forecast error by store
+
+This dashboard highlights differences in demand and forecasting performance across locations.
+
+## Dashboard 3 — Inventory Planning
+
+* Top 15 inventory priorities
+* Safety stock by store
+* Reorder point by store
+* Reorder point vs. forecast demand
+* Inventory planning assumptions
+
+This dashboard translates forecast results into product- and store-level inventory planning insights.
+
+### Dashboard 3 Screenshot
+
+![Inventory Planning Dashboard](dashboards/screenshots/dashboard_3_inventory_planning.png)
+
+---
+
+## Dashboard 4 — Inventory Sensitivity
+
+* Reorder point sensitivity heatmap
+* 3, 7, 14, and 21-day lead times
+* 90%, 95%, and 99% service levels
+* Base-case identification: 7-day lead time / 95% service level
+* Planning interpretation and limitations
+
+This dashboard evaluates how inventory requirements change when key planning assumptions are varied.
+
+### Dashboard 4 Screenshot
+
+![Inventory Sensitivity Dashboard](dashboards/screenshots/dashboard_4_inventory_sensitivity.png)
 
 ---
 
@@ -321,6 +421,7 @@ Interactive Tableau dashboards were created to communicate demand, forecast perf
 ```text
 Retail-Demand-Forecasting/
 
+│
 ├── data/
 │   ├── raw/
 │   └── processed/
@@ -332,10 +433,42 @@ Retail-Demand-Forecasting/
 │
 ├── dashboard/
 │   ├── Retail_Demand_Inventory.twbx
-│   └── dashboard_3.png
+│   └── screenshots/
+│       ├── dashboard_3_inventory_planning.png
+│       └── dashboard_4_inventory_sensitivity.png
 │
 ├── download_dataset.py
 ├── requirements.txt
 ├── .gitignore
 └── README.md
 ```
+
+---
+
+## Technologies
+
+* **Python**
+* **pandas**
+* **NumPy**
+* **LightGBM**
+* **scikit-learn**
+* **Matplotlib**
+* **Jupyter Notebook**
+* **Tableau**
+
+---
+
+## Key Takeaways
+
+This project demonstrates an end-to-end analytics workflow:
+
+1. Identify demand patterns through exploratory analysis.
+2. Engineer time-series, calendar, product, store, event, and pricing features.
+3. Establish a seasonal-naive forecasting baseline.
+4. Train and evaluate a LightGBM demand forecasting model using time-based validation.
+5. Translate forecasts and forecast uncertainty into safety stock and reorder-point estimates.
+6. Prioritize product-store combinations based on demand and uncertainty.
+7. Test the sensitivity of inventory requirements to lead time and service-level assumptions.
+8. Communicate results through interactive Tableau dashboards.
+
+The project connects **machine learning model development with operational decision-making**, demonstrating how forecasts can be translated into actionable retail inventory planning metrics.

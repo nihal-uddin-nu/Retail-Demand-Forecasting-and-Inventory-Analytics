@@ -27,8 +27,8 @@ SELECT
     END AS group_type,
     store_id,
     state_id,
-    ROUND(actual_revenue, 2) AS actual_revenue,
-    ROUND(forecast_revenue, 2) AS forecast_revenue,
+    TO_CHAR(actual_revenue, 'FM999,999,999,999,990.00') AS actual_revenue,
+    TO_CHAR(forecast_revenue, 'FM999,999,999,999,990.00') AS forecast_revenue,
     ROUND(
         (forecast_revenue - actual_revenue)
         / NULLIF(actual_revenue, 0) * 100,

@@ -17,3 +17,6 @@ data/processed/*
 
 # Jupyter
 .ipynb_checkpoints/
+
+# SQL table creation query for local use
+sql/00_create_tables_local.sql

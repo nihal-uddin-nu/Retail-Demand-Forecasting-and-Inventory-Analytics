@@ -27,12 +27,15 @@ SELECT
     END AS group_type,
     store_id,
     state_id,
-    TO_CHAR(actual_revenue, 'FM999,999,999,999,990.00') AS actual_revenue,
-    TO_CHAR(forecast_revenue, 'FM999,999,999,999,990.00') AS forecast_revenue,
-    ROUND(
-        (forecast_revenue - actual_revenue)
-        / NULLIF(actual_revenue, 0) * 100,
-        2
+    TO_CHAR(actual_revenue, 'FM$999,999,999,999,990.00') AS actual_revenue,
+    TO_CHAR(forecast_revenue, 'FM$999,999,999,999,990.00') AS forecast_revenue,
+	TO_CHAR(
+		ROUND(
+			(forecast_revenue - actual_revenue)
+			/ NULLIF(actual_revenue, 0) * 100,
+			2
+		),
+		'FM999,999,990.00%'
     ) AS percent_error
 FROM revenue_summary
 ORDER BY

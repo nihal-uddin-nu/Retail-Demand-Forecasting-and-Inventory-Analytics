@@ -288,84 +288,30 @@ Therefore, the seven-day lead time and 95% service level are explicit planning a
 
 ---
 
-# 4. SQL & Database Analysis
+# 4. SQL Analysis (PostgreSQL)
 
-PostgreSQL was incorporated to demonstrate relational database management, SQL querying, and analysis of the forecasting results.
+PostgreSQL was used to store forecasting results, combine sales forecasts with calendar and pricing data, and perform revenue analysis.
 
-The processed forecasting data and supporting M5 datasets were imported into PostgreSQL to enable analysis outside the Python modeling pipeline. SQL scripts were used to create the database tables, import the CSV files, establish table relationships, and perform additional analysis.
+**Database Setup and Data Import (`sql/00_create_tables.sql`)**
 
-## Database Structure
+- Created relational tables for validation forecasts, calendar information, and weekly selling prices.
+- Imported CSV datasets into PostgreSQL using `COPY`.
+- Defined column data types and constraints to maintain data consistency.
 
-The database uses three separate tables for the underlying datasets:
+**Forecast and Pricing Integration (`sql/01_create_views.sql`)**
 
-| Table | Description |
-|---|---|
-| `validation_forecasts` | Actual and predicted daily sales, along with product, department, category, store, and state identifiers |
-| `calendar` | Calendar dates, retail week identifiers, weekday information, events, and SNAP indicators |
-| `sell_prices` | Historical weekly selling prices by product and store |
+- Created a reusable `forecast_prices` view by joining validation forecasts with calendar and selling price tables.
+- Used `LEFT JOIN` operations to preserve forecast records even when matching calendar or pricing data was unavailable.
+- Connected daily forecast records to weekly selling prices using product, store, and week identifiers.
 
-The tables retain their original relational structure rather than storing all information in one combined dataset.
+**Revenue Analysis (`sql/02_forecasted_vs_actual_revenue.sql`)**
 
-## Database Setup and Data Import
+- Calculated actual and forecast revenue by multiplying sales quantities by selling prices and aggregating results by store.
+- Used a Common Table Expression (CTE) to organize revenue calculations and simplify downstream analysis.
+- Applied `GROUPING SETS` to generate store-level, state-level, overall revenue summaries in a single query.
+- Calculated percentage error to evaluate revenue forecasting performance, with positive values indicating overforecasting and negative values indicating underforecasting.
 
-The database setup script '00_create_tables' first removes existing views and tables, allowing the database to be recreated from scratch. It then defines the three tables with appropriate PostgreSQL data types, including `DATE`, `SMALLINT`, `BOOLEAN`, `NUMERIC`, and `TEXT`.
-
-The CSV files are imported into their corresponding tables using PostgreSQL's `COPY` command. File paths are specified as placeholders in the script and replaced with the actual locations of the CSV files.
-
-This separates database setup and data loading from the Python modeling pipeline, making the database independently reproducible.
-
-## Creating a Reusable SQL View
-
-A PostgreSQL view named `forecast_prices` combines the three tables using relational joins.
-
-The daily forecast records are first joined to the calendar table using `calendar_date`. The resulting `wm_yr_wk` identifier is then used to match the corresponding weekly selling price using `item_id`, `store_id`, and `wm_yr_wk`.
-
-The view uses `LEFT JOIN` operations to preserve the original forecast records, including records without a matching calendar entry or selling price.
-
-```sql
-DROP VIEW IF EXISTS forecast_prices;
-
-CREATE VIEW forecast_prices AS
-SELECT
-    vf.*,
-    sp.sell_price
-FROM validation_forecasts vf
-LEFT JOIN calendar c
-    ON vf.calendar_date = c.calendar_date
-LEFT JOIN sell_prices sp
-    ON vf.item_id = sp.item_id
-    AND vf.store_id = sp.store_id
-    AND c.wm_yr_wk = sp.wm_yr_wk;
-```
-
-The view provides a reusable query that combines daily sales forecasts with their corresponding weekly selling prices without physically duplicating the underlying data.
-
-## SQL Analysis
-
-The combined view can be queried to calculate business metrics such as actual and forecasted revenue by store.
-
-For example:
-
-```sql
-SELECT
-    store_id,
-    SUM(sales * sell_price) AS actual_revenue,
-    SUM(forecast * sell_price) AS forecast_revenue
-FROM forecast_prices
-GROUP BY store_id;
-```
-
-This allows forecast performance and revenue estimates to be analyzed at different levels of aggregation using SQL.
-
-Additional queries can examine:
-
-- Actual versus forecasted revenue by store
-- Revenue by product and category
-- Sales and forecast performance across time periods
-- Missing selling prices
-- Data consistency and duplicate records
-
-SQL scripts are organized separately from the Python notebooks to make database creation, data imports, and analytical queries independently accessible and reproducible.
+The SQL analysis supports comparisons between individual store performance and overall revenue forecasting accuracy.
 
 ---
 

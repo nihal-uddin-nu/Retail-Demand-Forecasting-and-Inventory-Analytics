@@ -292,51 +292,53 @@ Therefore, the seven-day lead time and 95% service level are explicit planning a
 
 PostgreSQL was incorporated to demonstrate relational database management, SQL querying, and analysis of the forecasting results.
 
-The processed forecasting data and supporting M5 tables were imported into PostgreSQL to enable analysis outside the Python modeling pipeline.
+The processed forecasting data and supporting M5 datasets were imported into PostgreSQL to enable analysis outside the Python modeling pipeline. SQL scripts were used to create the database tables, import the CSV files, establish table relationships, and perform additional analysis.
 
 ## Database Structure
 
-The database uses separate tables for the underlying datasets:
+The database uses three separate tables for the underlying datasets:
 
 | Table | Description |
 |---|---|
-| `validation_forecasts` | Actual and predicted daily sales, along with product and store identifiers |
-| `calendar` | Calendar dates and their corresponding M5 retail week identifiers |
-| `sell_price` | Historical weekly selling prices by product and store |
+| `validation_forecasts` | Actual and predicted daily sales, along with product, department, category, store, and state identifiers |
+| `calendar` | Calendar dates, retail week identifiers, weekday information, events, and SNAP indicators |
+| `sell_prices` | Historical weekly selling prices by product and store |
 
-The tables retain their original structure rather than storing all information in one combined dataset.
+The tables retain their original relational structure rather than storing all information in one combined dataset.
+
+## Database Setup and Data Import
+
+The database setup script '00_create_tables' first removes existing views and tables, allowing the database to be recreated from scratch. It then defines the three tables with appropriate PostgreSQL data types, including `DATE`, `SMALLINT`, `BOOLEAN`, `NUMERIC`, and `TEXT`.
+
+The CSV files are imported into their corresponding tables using PostgreSQL's `COPY` command. File paths are specified as placeholders in the script and replaced with the actual locations of the CSV files.
+
+This separates database setup and data loading from the Python modeling pipeline, making the database independently reproducible.
 
 ## Creating a Reusable SQL View
 
 A PostgreSQL view named `forecast_prices` combines the three tables using relational joins.
 
-The daily forecast records are first joined to the calendar table using `date`. The resulting `wm_yr_wk` identifier is then used to match the corresponding weekly selling price using `item_id`, `store_id`, and `wm_yr_wk`.
+The daily forecast records are first joined to the calendar table using `calendar_date`. The resulting `wm_yr_wk` identifier is then used to match the corresponding weekly selling price using `item_id`, `store_id`, and `wm_yr_wk`.
 
-The view uses `LEFT JOIN` operations to preserve the original forecast records, including records without a matching price.
+The view uses `LEFT JOIN` operations to preserve the original forecast records, including records without a matching calendar entry or selling price.
 
 ```sql
+DROP VIEW IF EXISTS forecast_prices;
+
 CREATE VIEW forecast_prices AS
 SELECT
-    vf.id,
-    vf.item_id,
-    vf.dept_id,
-    vf.cat_id,
-    vf.store_id,
-    vf.state_id,
-    vf.date,
-    vf.sales,
-    vf.forecast,
+    vf.*,
     sp.sell_price
 FROM validation_forecasts vf
 LEFT JOIN calendar c
-    ON vf.date = c.date
-LEFT JOIN sell_price sp
+    ON vf.calendar_date = c.calendar_date
+LEFT JOIN sell_prices sp
     ON vf.item_id = sp.item_id
     AND vf.store_id = sp.store_id
     AND c.wm_yr_wk = sp.wm_yr_wk;
 ```
 
-The view provides a reusable query that combines daily sales forecasts with the corresponding weekly selling prices without physically duplicating the underlying data.
+The view provides a reusable query that combines daily sales forecasts with their corresponding weekly selling prices without physically duplicating the underlying data.
 
 ## SQL Analysis
 
@@ -363,7 +365,7 @@ Additional queries can examine:
 - Missing selling prices
 - Data consistency and duplicate records
 
-SQL scripts are organized separately from the Python notebooks to make the database operations and analytical queries independently accessible and reproducible.
+SQL scripts are organized separately from the Python notebooks to make database creation, data imports, and analytical queries independently accessible and reproducible.
 
 ---
 
@@ -468,34 +470,31 @@ This dashboard evaluates how inventory requirements change when key planning ass
 # Project Structure
 
 ```text
-Retail-Demand-Forecasting/
-│
-├── data/
-│   ├── raw/
-│   └── processed/
-│
-├── notebooks/
-│   ├── 01_EDA.ipynb
-│   ├── 02_Forecasting.ipynb
-│   └── 03_Inventory_Analytics.ipynb
-│
-├── sql/
-│   ├── 01_create_views.sql
-│   ├── 02_revenue_analysis.sql
-│   ├── 03_product_analysis.sql
-│   ├── 04_forecast_analysis.sql
-│   └── 05_data_quality_checks.sql
-│
-├── dashboard/
-│   ├── Retail_Demand_Inventory.twbx
-│   └── screenshots/
-│       ├── dashboard_3_inventory_planning.png
-│       └── dashboard_4_inventory_sensitivity.png
-│
-├── download_dataset.py
-├── requirements.txt
-├── .gitignore
-└── README.md
+Retail-Demand-Forecasting/  
+│  
+├── data/  
+│   ├── raw/  
+│   └── processed/  
+│  
+├── notebooks/  
+│   ├── 01_EDA.ipynb  
+│   ├── 02_Forecasting.ipynb  
+│   └── 03_Inventory_Analytics.ipynb  
+│  
+├── sql/  
+│   ├── 00_create_tables.sql  
+│   └── 01_create_views.sql  
+│  
+├── dashboard/  
+│   ├── Retail_Demand_Inventory.twbx  
+│   └── screenshots/  
+│       ├── dashboard_3_inventory_planning.png  
+│       └── dashboard_4_inventory_sensitivity.png  
+│  
+├── download_dataset.py  
+├── requirements.txt  
+├── .gitignore  
+└── README.md  
 ```
 
 ---

@@ -3,10 +3,10 @@ DROP VIEW IF EXISTS forecast_prices;
 CREATE VIEW forecast_prices AS
 SELECT
     vf.*,
-    sp.sell_prices
+    sp.sell_price
 FROM validation_forecasts vf
 LEFT JOIN calendar c
-    ON vf.date = c.date
+    ON vf.calendar_date = c.calendar_date
 LEFT JOIN sell_prices sp
     ON vf.item_id = sp.item_id
     AND vf.store_id = sp.store_id

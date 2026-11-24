@@ -308,10 +308,10 @@ PostgreSQL was used to store forecasting results, combine sales forecasts with c
 
 - Calculated actual and forecast revenue by multiplying sales quantities by selling prices and aggregating results by store.
 - Used a Common Table Expression (CTE) to organize revenue calculations and simplify downstream analysis.
-- Applied `GROUPING SETS` to generate store-level, state-level, overall revenue summaries in a single query.
+- Applied `GROUPING SETS` to generate store-level, state-level, overall revenue summaries in query 02, and item-level and department-level in query 03.
 - Calculated percentage error to evaluate revenue forecasting performance, with positive values indicating overforecasting and negative values indicating underforecasting.
 
-The SQL analysis supports comparisons between individual store performance and overall revenue forecasting accuracy.
+The SQL analysis supports comparisons between individual item, department, store, and state performance and overall revenue forecasting accuracy.
 
 ---
 

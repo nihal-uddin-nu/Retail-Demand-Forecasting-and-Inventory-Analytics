@@ -31,10 +31,13 @@ SELECT
     dept_id,
     actual_sales,
     ROUND(forecast_sales, 0),
-    ROUND(
-        (forecast_sales - actual_sales)
-        / NULLIF(actual_sales, 0) * 100,
-        2
+	TO_CHAR(
+	    ROUND(
+	        (forecast_sales - actual_sales)
+	        / NULLIF(actual_sales, 0) * 100,
+	        2
+		),
+		'FM999,999,990.00%'
     ) AS sales_percent_error,
     TO_CHAR(actual_revenue, 'FM$999,999,999,999,990.00') AS actual_revenue,
     TO_CHAR(forecast_revenue, 'FM$999,999,999,999,990.00') AS forecast_revenue,
